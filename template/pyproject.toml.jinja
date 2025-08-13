@@ -61,28 +61,28 @@ test = [
 {% if enable_ruff -%}
 lint = [
     "ruff",
-{% if enable_mypy -%}
+{%- if enable_mypy %}
     "mypy",
-{% endif -%}
+{%- endif %}
 ]
-{% endif %}
+{% endif -%}
 {% if enable_precommit -%}
 automation = [
-{% if enable_nox -%}
+{%- if enable_nox %}
     "nox>=2025.5.1",
     "nox-uv>=0.6.1",
-{% endif -%}
+{%- endif %}
     "pre-commit",
 ]
-{% endif %}
+{% endif -%}
 dev = [
     { include-group = "test" },
-{% if enable_ruff -%}
+{%- if enable_ruff %}
     { include-group = "lint" },
-{% endif -%}
-{% if enable_precommit -%}
+{%- endif %}
+{%- if enable_precommit %}
     { include-group = "automation" },
-{% endif -%}
+{%- endif %}
 ]
 
 {% if versioning == "setuptools-scm" -%}
@@ -90,11 +90,11 @@ dev = [
 {% if build_backend == "setuptools" -%}
 write_to = "src/{{ package_name }}/_version.py"
 {% endif -%}
-# 避免长串hash污染发布版本
+# Avoid long hash strings polluting release versions
 local_scheme = "no-local-version"
-# 缺失VCS元数据时的兜底版本
+# Fallback version when VCS metadata is missing
 fallback_version = "0.0.0"
-# 支持v前缀的标签格式
+# Support v-prefixed tag format
 tag_regex = "^v?(?P<version>\\d+\\.\\d+\\.\\d+(?:[.-](?:rc|a|b|post|dev)\\d*)?)$"
 
 {% endif -%}

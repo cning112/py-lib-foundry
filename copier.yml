@@ -1,29 +1,63 @@
 _min_copier_version: "9.0.0"
-_template: template
+_subdirectory: template
 
 dist_name:
   type: str
   help: PyPI distribution name (e.g., "awesome-lib")
+  validator: >-
+    {% if not dist_name %}
+    Distribution name is required
+    {% elif not dist_name.replace('-', '').replace('_', '').isalnum() %}
+    Distribution name must contain only letters, numbers, hyphens and underscores
+    {% endif %}
+
 package_name:
   type: str
   help: Python package import name (e.g., "awesome_lib")
   default: "{{ dist_name|replace('-', '_') }}"
+
 repo_name:
   type: str
   default: "{{ dist_name }}"
+
 project_name:
   type: str
   default: "{{ dist_name|replace('-', ' ')|title }}"
+
 author_name:
   type: str
+  help: Author full name
+  validator: >-
+    {% if not author_name %}
+    Author name is required
+    {% endif %}
+
 author_email:
   type: str
+  help: Author email address
+  validator: >-
+    {% if not author_email %}
+    Author email is required
+    {% elif '@' not in author_email or '.' not in author_email %}
+    Please provide a valid email address
+    {% endif %}
+
 github_username:
   type: str
   help: "GitHub username for repository URLs"
   default: "{{ author_name|lower|replace(' ', '-')|replace('.', '') }}"
+  validator: >-
+    {% if enable_ci and not github_username %}
+    GitHub username is required when CI is enabled
+    {% endif %}
+
 description:
   type: str
+  help: Short description of the project
+  validator: >-
+    {% if not description %}
+    Project description is required
+    {% endif %}
 license:
   type: str
   choices: [ "MIT","Apache-2.0","BSD-3-Clause","MPL-2.0","GPL-3.0-or-later","Proprietary" ]
@@ -85,10 +119,18 @@ setup_dev_env:
   default: true
   help: "Automatically set up development environment (uv sync + pre-commit install)"
 
-# 条件排除：根据变量不生成某些文件/目录
+# Files to exclude from copying
+_skip_if_exists: []
+_envops:
+  block_start_string: "{%"
+  block_end_string: "%}"
+  variable_start_string: "{{"
+  variable_end_string: "}}"
+
+# Conditional exclusion: don't generate certain files/directories based on variables
 _exclude_if:
   - condition: "{{ not enable_ci }}"
-    paths: [ ".github/workflows/build.yml.jinja", ".github/workflows/publish.yml.jinja" ]
+    paths: [ ".github/workflows/code-quality.yml", ".github/workflows/dependency-update.yml" ]
   - condition: "{{ not include_py_typed }}"
     paths: [ "src/{{ package_name }}/py.typed" ]
   - condition: "{{ docs_tool == 'none' }}"
@@ -100,7 +142,7 @@ _exclude_if:
   - condition: "{{ versioning != 'static' }}"
     paths: [ ".bumpversion.cfg.jinja", ".github/workflows/bump_version.yml.jinja" ]
 
-# 项目渲染后执行的任务
+# Tasks to execute after project rendering
 _tasks:
   - when: "{{ setup_dev_env }}"
     command: uv sync --all-extras --all-groups

@@ -17,7 +17,7 @@ options.default_venv_backend = "uv"
 options.reuse_existing_virtualenvs = True
 options.stop_on_first_error = True
 
-PYTHON_VERSIONS = [{{ python_versions.split(',')|map('trim')|map('tojsonstring')|join(', ') }}]
+PYTHON_VERSIONS = [{% for v in python_versions.split(',') %}'{{ v|trim }}'{{ ", " if not loop.last else "" }}{% endfor %}]
 
 
 @session(python=PYTHON_VERSIONS, name="tests")
@@ -66,7 +66,7 @@ def build_package(s: Session):
         s.run(
             *shlex.split(
                 f'uv run --isolated --with {wheel_files[0]} python -c '
-                f'"import {{ package_name }}; print(f\'{{ package_name }} {{{{ package_name }}.__version__}} installed\')"'
+                f'"import {{ package_name }}; print(f\'{{ package_name }} {{ package_name }}.__version__ installed\')"'
             )
         )
 
