@@ -1,0 +1,167 @@
+{% if build_backend == "hatchling" -%}
+[build-system]
+{% if versioning == "setuptools-scm" -%}
+requires = ["hatchling", "hatch-vcs"]
+{% else -%}
+requires = ["hatchling"]
+{% endif -%}
+build-backend = "hatchling.build"
+{% else -%}
+[build-system]
+{% if versioning == "setuptools-scm" -%}
+requires = ["setuptools>=61.0", "setuptools-scm>=8.0", "wheel"]
+{% else -%}
+requires = ["setuptools>=61.0", "wheel"]
+{% endif -%}
+build-backend = "setuptools.build_meta"
+{% endif %}
+
+[project]
+name = "{{ dist_name }}"
+authors = [{ name = "{{ author_name }}", email = "{{ author_email }}" }]
+description = "{{ description }}"
+{% if versioning == "static" -%}
+version = "0.1.0"
+{% else -%}
+dynamic = ["version"]
+{% endif -%}
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">= {{ python_min }}"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/{{ github_username }}/{{ repo_name }}"
+Repository = "https://github.com/{{ github_username }}/{{ repo_name }}"
+{% if docs_tool != "none" -%}
+Documentation = "https://{{ repo_name }}.readthedocs.io/"
+{% endif -%}
+Issues = "https://github.com/{{ github_username }}/{{ repo_name }}/issues"
+
+[project.optional-dependencies]
+{% if docs_tool == "mkdocs" -%}
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-include-markdown-plugin",
+]
+{% elif docs_tool == "sphinx" -%}
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme", 
+    "sphinx-autodoc-typehints",
+]
+{% endif %}
+
+[dependency-groups]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+{% if enable_ruff -%}
+lint = [
+    "ruff",
+{% if enable_mypy -%}
+    "mypy",
+{% endif -%}
+]
+{% endif %}
+{% if enable_precommit -%}
+automation = [
+{% if enable_nox -%}
+    "nox>=2025.5.1",
+    "nox-uv>=0.6.1",
+{% endif -%}
+    "pre-commit",
+]
+{% endif %}
+dev = [
+    { include-group = "test" },
+{% if enable_ruff -%}
+    { include-group = "lint" },
+{% endif -%}
+{% if enable_precommit -%}
+    { include-group = "automation" },
+{% endif -%}
+]
+
+{% if versioning == "setuptools-scm" -%}
+[tool.setuptools_scm]
+{% if build_backend == "setuptools" -%}
+write_to = "src/{{ package_name }}/_version.py"
+{% endif -%}
+# 避免长串hash污染发布版本
+local_scheme = "no-local-version"
+# 缺失VCS元数据时的兜底版本
+fallback_version = "0.0.0"
+# 支持v前缀的标签格式
+tag_regex = "^v?(?P<version>\\d+\\.\\d+\\.\\d+(?:[.-](?:rc|a|b|post|dev)\\d*)?)$"
+
+{% endif -%}
+{% if build_backend == "setuptools" -%}
+[tool.setuptools.packages.find]
+where = ["src"]
+
+{% endif -%}
+{% if enable_ruff -%}
+[tool.ruff]
+target-version = "py{{ python_min|replace('.', '') }}"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # Pyflakes
+    "I",       # isort
+    "B",       # flake8-bugbear
+    "C4",      # flake8-comprehensions
+    "UP",      # pyupgrade
+    "SIM",     # flake8-simplify
+    "RUF",     # Ruff-specific
+    "T20",     # flake8-print
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["{{ package_name }}"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["B011", "T201", "T203"]
+
+{% endif -%}
+{% if enable_mypy -%}
+[tool.mypy]
+python_version = "{{ python_min }}"
+ignore_missing_imports = true
+show_error_codes = true
+pretty = true
+files = ["src"]
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+
+{% endif -%}
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config", 
+    "-ra",
+    "--cov={{ package_name }}",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=xml",
+    "--cov-report=html",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]

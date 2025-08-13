@@ -1,0 +1,33 @@
+{% if enable_precommit -%}
+default_stages: [pre-commit]
+
+repos:
+{% if enable_ruff -%}
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.2
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
+{% endif %}
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.8.3
+    hooks:
+      - id: uv-lock
+        files: pyproject.toml
+
+{% if enable_mypy -%}
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: uv run --all-extras --all-groups mypy
+        language: system
+        args: ["--config-file=pyproject.toml"]
+        require_serial: true
+        pass_filenames: false
+{% endif -%}
+{% endif %}

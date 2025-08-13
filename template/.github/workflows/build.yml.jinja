@@ -1,0 +1,45 @@
+{% if enable_ci -%}
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [{{ python_versions|replace(',', ', ') }}]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        
+    - name: Set up Python ${{ "{{" }} matrix.python-version {{ "}}" }}
+      run: uv python install ${{ "{{" }} matrix.python-version {{ "}}" }}
+      
+    - name: Install dependencies
+      run: uv sync --all-extras --all-groups
+      
+    - name: Run tests
+      run: uv run pytest
+      
+{% if enable_ruff -%}
+    - name: Run linting
+      run: |
+        uv run ruff check src tests
+        uv run ruff format --check src tests
+{% endif -%}
+        
+{% if enable_mypy -%}
+    - name: Run type checking
+      run: uv run mypy src
+{% endif -%}
+{% endif %}

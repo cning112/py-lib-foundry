@@ -1,0 +1,67 @@
+{% if versioning == "static" -%}
+name: Bump Version and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Type of version bump'
+        required: true
+        type: choice
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ "{{" }} secrets.GITHUB_TOKEN {{ "}}" }}
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        
+      - name: Set up Python
+        run: uv python install {{ python_min }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Install bump2version
+        run: uv add --dev bump2version
+
+      - name: Bump version
+        run: |
+          uv run bump2version ${{ "{{" }} github.event.inputs.version_type {{ "}}" }}
+          
+      - name: Push changes
+        run: |
+          git push origin main --follow-tags
+
+      - name: Get new version
+        id: version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build package
+        run: uv build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ "{{" }} steps.version.outputs.version {{ "}}" }}
+          name: {{ project_name }} ${{ "{{" }} steps.version.outputs.version {{ "}}" }}
+          files: dist/*
+          generate_release_notes: true
+{% endif %}

@@ -1,0 +1,95 @@
+{% if enable_nox -%}
+#!/usr/bin/env -S uv run --script --quiet
+
+# /// script
+# dependencies = ["nox", "nox-uv"]
+# ///
+
+import shlex
+import pathlib
+import shutil
+
+import nox
+from nox import Session, options
+from nox_uv import session
+
+options.default_venv_backend = "uv"
+options.reuse_existing_virtualenvs = True
+options.stop_on_first_error = True
+
+PYTHON_VERSIONS = [{{ python_versions.split(',')|map('trim')|map('tojsonstring')|join(', ') }}]
+
+
+@session(python=PYTHON_VERSIONS, name="tests")
+def tests(s: Session) -> None:
+    """Run tests with coverage."""
+    s.run(
+        *shlex.split(
+            "uv run pytest --cov={{ package_name }} --cov-report=xml --cov-report=term "
+            "--cov-branch --junit-xml=pytest.xml -v"
+        )
+    )
+
+
+{% if enable_ruff or enable_mypy -%}
+@session(name="lint", uv_groups=["lint"], uv_all_extras=True)
+def lint(s: Session) -> None:
+    """Run linting and formatting."""
+{% if enable_ruff -%}
+    # Ruff linting
+    s.run(*shlex.split("uv run ruff check --fix ."))
+    
+    # Ruff formatting
+    s.run(*shlex.split("uv run ruff format ."))
+{% endif %}
+
+{% if enable_mypy -%}
+    # MyPy type checking
+    s.run(*shlex.split("uv run mypy src"))
+{% endif -%}
+
+{% endif %}
+
+@session(name="build", default=False)
+def build_package(s: Session):
+    """Build and verify package."""
+    # Build package
+    s.run(*shlex.split("uv build"))
+    
+    # Verify package
+    s.run(*shlex.split("uv run --with twine twine check dist/*"))
+    
+    # Test installation
+    import glob
+    wheel_files = glob.glob("dist/*.whl")
+    if wheel_files:
+        s.run(
+            *shlex.split(
+                f'uv run --isolated --with {wheel_files[0]} python -c '
+                f'"import {{ package_name }}; print(f\'{{ package_name }} {{{{ package_name }}.__version__}} installed\')"'
+            )
+        )
+
+
+@session(name="clean", default=False)
+def clean(s: Session):
+    """Clean build artifacts and cache files."""
+    dirs_to_clean = [
+        "dist", "build", ".nox", ".pytest_cache", 
+        ".mypy_cache", ".ruff_cache", ".coverage", "htmlcov"
+    ]
+    
+    for dir_name in dirs_to_clean:
+        path = pathlib.Path(dir_name)
+        if path.exists() and path.is_dir():
+            shutil.rmtree(path)
+            s.log(f"Removed: {dir_name}")
+    
+    # Clean Python cache files
+    for cache_dir in pathlib.Path(".").rglob("__pycache__"):
+        if cache_dir.is_dir():
+            shutil.rmtree(cache_dir)
+    
+    for pyc_file in pathlib.Path(".").rglob("*.pyc"):
+        pyc_file.unlink()
+{% endif %}

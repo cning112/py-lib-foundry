@@ -1,0 +1,207 @@
+# {{ project_name }}
+
+{{ description }}
+
+## Installation
+
+```bash
+# Using uv (recommended)
+uv add {{ dist_name }}
+
+# Using pip
+pip install {{ dist_name }}
+```
+
+## Quick Start
+
+```python
+import {{ package_name }}
+
+# Example usage will be documented here
+```
+
+## Development
+
+### Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) package manager
+
+### Local Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/{{ github_username }}/{{ repo_name }}.git
+cd {{ repo_name }}
+
+{% if not setup_dev_env -%}
+# Create virtual environment and install dependencies
+uv sync --all-extras --all-groups
+{% endif -%}
+
+{% if enable_ci -%}
+### GitHub Actions
+
+Automated workflows:
+- **Build**: Tests across Python {{ python_versions.replace(',', ' and ') }} + code quality
+- **Publish**: Automatic PyPI deployment on GitHub releases
+{% if versioning == "static" -%}
+- **Version management**: Use `bump2version` locally, then create GitHub release
+{% else -%}
+- **Version management**: Git tags automatically determine versions
+{% endif -%}
+
+{% if enable_pypi -%}
+**Release process:**
+1. {% if versioning == "static" %}Go to Actions → "Bump Version and Release" → Run workflow with patch/minor/major{% else %}Create a git tag (e.g., `git tag v1.0.0`){% endif %}
+2. {% if versioning == "static" %}Workflow automatically creates GitHub release{% else %}Push tags and create GitHub release{% endif %}
+3. Release triggers automatic PyPI publishing
+{% endif -%}
+{% endif -%}
+
+# Verify installation
+uv run python -c "import {{ package_name }}; print({{ package_name }}.__version__)" || uv pip show {{ dist_name }}
+```
+
+### Running Tests
+
+```bash
+{% if enable_nox -%}
+# Recommended: Run tests via nox
+nox -s tests
+
+# Direct pytest (single Python version)
+uv run pytest
+{% else -%}
+# Run all tests
+uv run pytest
+{% endif -%}
+
+# Run with coverage
+uv run pytest --cov={{ package_name }} --cov-report=html
+
+# Run specific test file
+uv run pytest tests/test_{{ package_name }}.py -v
+```
+
+{% if enable_ruff or enable_mypy or enable_precommit -%}
+### Code Quality
+
+{% if enable_precommit -%}
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Run pre-commit on staged files only
+pre-commit run
+```
+{% endif -%}
+
+{% if enable_ruff -%}
+```bash
+# Format code
+uv run ruff format
+
+# Lint and auto-fix
+uv run ruff check --fix
+
+# Check without fixing
+uv run ruff check
+```
+{% endif -%}
+
+{% if enable_mypy -%}
+```bash
+# Type checking
+uv run mypy src
+```
+{% endif -%}
+
+{% if enable_nox -%}
+```bash
+# Run all quality checks via nox
+nox -s lint
+```
+{% endif -%}
+{% endif -%}
+
+{% if enable_nox -%}
+### Automation with Nox
+
+```bash
+# List all available sessions
+nox --list
+
+# Run tests on all Python versions
+nox -s tests
+
+# Run linting and formatting
+nox -s lint
+
+# Build and verify package
+nox -s build
+
+# Clean build artifacts
+nox -s clean
+
+# Run all default sessions
+nox
+```
+{% endif -%}
+
+### Building and Publishing
+
+```bash
+# Build package
+uv build
+
+# Check package
+uv run --with twine twine check dist/*
+
+{% if enable_pypi -%}
+# Publish to PyPI (maintainers only)
+{% if pypi_publish_mode == "trusted-publishing" -%}
+# Publishing is automated via GitHub releases
+{% else -%}
+uv run --with twine twine upload dist/*
+{% endif -%}
+{% endif -%}
+```
+
+### Project Structure
+
+```
+{{ repo_name }}/
+├── src/{{ package_name }}/         # Main package code
+├── tests/                          # Test files  
+├── pyproject.toml                  # Project configuration
+{% if docs_tool != "none" -%}
+├── docs/                           # Documentation
+{% endif -%}
+└── README.md                       # This file
+```
+
+### Adding Dependencies
+
+```bash
+# Runtime dependencies
+uv add requests click
+
+# Development dependencies  
+uv add --group dev pytest-xdist black
+
+# Optional dependencies
+uv add --optional web fastapi uvicorn
+uv add --optional cli typer rich
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and add tests
+4. Run the test suite: `uv run pytest`{% if enable_nox %} or `nox -s tests`{% endif %}
+5. Submit a pull request
+
+## License
+
+This project is licensed under the {{ license }} License - see the [LICENSE](LICENSE) file for details.
