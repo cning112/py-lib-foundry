@@ -68,8 +68,8 @@ lint = [
 {% endif -%}
 {% if enable_nox -%}
 nox-tools = [
-    "nox>=2025.5.1",
-    "nox-uv>=0.6.1",
+    "nox>=2026.4.10",
+    "nox-uv>=0.8.0",
 ]
 {% endif -%}
 {% if enable_precommit -%}
@@ -134,6 +134,7 @@ select = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["{{ package_name }}"]
+split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*" = ["B011", "T201", "T203"]

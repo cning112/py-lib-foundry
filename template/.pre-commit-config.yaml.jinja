@@ -4,7 +4,7 @@ default_stages: [pre-commit]
 repos:
 {% if enable_ruff -%}
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.2
+    rev: v0.15.15
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -14,7 +14,7 @@ repos:
 {% endif %}
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.8.3
+    rev: 0.11.17
     hooks:
       - id: uv-lock
         files: pyproject.toml
