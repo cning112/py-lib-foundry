@@ -66,12 +66,14 @@ lint = [
 {%- endif %}
 ]
 {% endif -%}
-{% if enable_precommit -%}
-automation = [
-{%- if enable_nox %}
+{% if enable_nox -%}
+nox-tools = [
     "nox>=2025.5.1",
     "nox-uv>=0.6.1",
-{%- endif %}
+]
+{% endif -%}
+{% if enable_precommit -%}
+automation = [
     "pre-commit",
 ]
 {% endif -%}
@@ -79,6 +81,9 @@ dev = [
     { include-group = "test" },
 {%- if enable_ruff %}
     { include-group = "lint" },
+{%- endif %}
+{%- if enable_nox %}
+    { include-group = "nox-tools" },
 {%- endif %}
 {%- if enable_precommit %}
     { include-group = "automation" },

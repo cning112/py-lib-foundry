@@ -67,15 +67,17 @@ jobs:
             fi
           fi
           
-          # Check for general updates using pip-check-updates equivalent
-          uv run --with pur pur --dry-run --nonzero-exit-code pyproject.toml
-          if [ $? -eq 0 ]; then
+          # Check for available updates by comparing lock files
+          cp uv.lock /tmp/uv.lock.snapshot
+          uv lock --upgrade
+          if diff -q uv.lock /tmp/uv.lock.snapshot > /dev/null 2>&1; then
             echo "has-updates=false" >> $GITHUB_OUTPUT
             echo "✅ All packages are up to date"
           else
             echo "has-updates=true" >> $GITHUB_OUTPUT
             echo "📦 Package updates available"
           fi
+          cp /tmp/uv.lock.snapshot uv.lock
 
       - name: Upload security report
         if: steps.check.outputs.security-updates == 'true'

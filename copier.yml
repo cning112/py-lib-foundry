@@ -119,28 +119,22 @@ setup_dev_env:
   default: true
   help: "Automatically set up development environment (uv sync + pre-commit install)"
 
-# Files to exclude from copying
-_skip_if_exists: []
 _envops:
   block_start_string: "{%"
   block_end_string: "%}"
   variable_start_string: "{{"
   variable_end_string: "}}"
 
-# Conditional exclusion: don't generate certain files/directories based on variables
-_exclude_if:
-  - condition: "{{ not enable_ci }}"
-    paths: [ ".github/workflows/code-quality.yml", ".github/workflows/dependency-update.yml" ]
-  - condition: "{{ not include_py_typed }}"
-    paths: [ "src/{{ package_name }}/py.typed" ]
-  - condition: "{{ docs_tool == 'none' }}"
-    paths: [ "docs/", "mkdocs.yml.jinja" ]
-  - condition: "{{ docs_tool == 'sphinx' }}"
-    paths: [ "mkdocs.yml.jinja" ]
-  - condition: "{{ docs_tool == 'mkdocs' }}"
-    paths: [ "docs/conf.py" ]
-  - condition: "{{ versioning != 'static' }}"
-    paths: [ ".bumpversion.cfg.jinja", ".github/workflows/bump_version.yml.jinja" ]
+_exclude:
+  - "{% if not enable_ci %}.github/workflows/code-quality.yml{% endif %}"
+  - "{% if not enable_ci %}.github/workflows/dependency-update.yml{% endif %}"
+  - "{% if not enable_ci %}.github/workflows/build.yml{% endif %}"
+  - "{% if not (enable_pypi and enable_ci) %}.github/workflows/publish.yml{% endif %}"
+  - "{% if versioning != 'static' %}.github/workflows/bump_version.yml{% endif %}"
+  - "{% if versioning != 'static' %}.bumpversion.cfg{% endif %}"
+  - "{% if not enable_nox %}noxfile.py{% endif %}"
+  - "{% if not include_py_typed %}src/{{ package_name }}/py.typed{% endif %}"
+  - "{% if docs_tool != 'mkdocs' %}mkdocs.yml{% endif %}"
 
 # Tasks to execute after project rendering
 _tasks:

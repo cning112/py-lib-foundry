@@ -1,0 +1,23 @@
+dist_name: test-lib
+package_name: test_lib
+repo_name: test-lib
+project_name: Test Lib
+author_name: Test Author
+author_email: test@example.com
+github_username: testuser
+description: A test library generated from template
+license: MIT
+python_min: "3.11"
+python_versions: "3.11,3.12"
+build_backend: hatchling
+versioning: static
+enable_ruff: true
+enable_mypy: true
+enable_precommit: true
+enable_nox: true
+enable_ci: true
+enable_pypi: true
+pypi_publish_mode: trusted-publishing
+include_py_typed: true
+docs_tool: mkdocs
+setup_dev_env: false

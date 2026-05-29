@@ -1,0 +1,14 @@
+dist_name: test-lib
+package_name: test_lib
+author_name: Test Author
+author_email: invalid-email  # Invalid email format
+github_username: testuser
+description: A test library
+license: MIT
+python_min: "3.11"
+python_versions: "3.11,3.12"
+build_backend: hatchling
+enable_ruff: true
+enable_mypy: true
+enable_nox: true
+setup_dev_env: false

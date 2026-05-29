@@ -20,14 +20,17 @@ options.stop_on_first_error = True
 PYTHON_VERSIONS = [{% for v in python_versions.split(',') %}'{{ v|trim }}'{{ ", " if not loop.last else "" }}{% endfor %}]
 
 
-@session(python=PYTHON_VERSIONS, name="tests")
+@session(python=PYTHON_VERSIONS, name="tests", uv_groups=["test"])
 def tests(s: Session) -> None:
     """Run tests with coverage."""
     s.run(
-        *shlex.split(
-            "uv run pytest --cov={{ package_name }} --cov-report=xml --cov-report=term "
-            "--cov-branch --junit-xml=pytest.xml -v"
-        )
+        "pytest",
+        "--cov={{ package_name }}",
+        "--cov-report=xml",
+        "--cov-report=term",
+        "--cov-branch",
+        "--junit-xml=pytest.xml",
+        "-v",
     )
 
 

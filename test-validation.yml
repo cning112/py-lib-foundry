@@ -1,0 +1,9 @@
+# Missing required fields to test validation
+python_min: "3.11"
+python_versions: "3.11,3.12"
+build_backend: hatchling
+license: MIT
+enable_ruff: true
+enable_mypy: true
+enable_nox: true
+setup_dev_env: false
