@@ -130,9 +130,10 @@ _exclude:
   - "{% if not enable_ci %}.github/workflows/dependency-update.yml{% endif %}"
   - "{% if not enable_ci %}.github/workflows/build.yml{% endif %}"
   - "{% if not (enable_pypi and enable_ci) %}.github/workflows/publish.yml{% endif %}"
-  - "{% if versioning != 'static' %}.github/workflows/bump_version.yml{% endif %}"
+  - "{% if versioning != 'static' or not enable_ci %}.github/workflows/bump_version.yml{% endif %}"
   - "{% if versioning != 'static' %}.bumpversion.cfg{% endif %}"
   - "{% if not enable_nox %}noxfile.py{% endif %}"
+  - "{% if not enable_precommit %}.pre-commit-config.yaml{% endif %}"
   - "{% if not include_py_typed %}src/{{ package_name }}/py.typed{% endif %}"
   - "{% if docs_tool != 'mkdocs' %}mkdocs.yml{% endif %}"
 
