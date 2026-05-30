@@ -12,7 +12,7 @@ python_versions: "3.11,3.12"
 build_backend: hatchling
 versioning: static
 enable_ruff: true
-enable_mypy: true
+type_checker: mypy
 enable_precommit: true
 enable_nox: true
 enable_ci: true

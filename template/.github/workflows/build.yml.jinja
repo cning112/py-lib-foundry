@@ -38,8 +38,11 @@ jobs:
         uv run ruff format --check src tests
 {% endif -%}
         
-{% if enable_mypy -%}
+{% if type_checker == "mypy" -%}
     - name: Run type checking
       run: uv run mypy src
+{% elif type_checker == "ty" -%}
+    - name: Run type checking
+      run: uv run ty check src
 {% endif -%}
 {% endif %}

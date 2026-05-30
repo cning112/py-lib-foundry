@@ -84,9 +84,11 @@ versioning:
 enable_ruff:
   type: bool
   default: true
-enable_mypy:
-  type: bool
-  default: true
+type_checker:
+  type: str
+  choices: ["mypy", "ty", "none"]
+  default: "mypy"
+  help: "Type checker to use (mypy is stable; ty is faster but still alpha)"
 enable_precommit:
   type: bool
   default: true

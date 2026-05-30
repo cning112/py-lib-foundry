@@ -58,11 +58,15 @@ test = [
     "pytest",
     "pytest-cov",
 ]
-{% if enable_ruff -%}
+{% if enable_ruff or type_checker != "none" -%}
 lint = [
+{%- if enable_ruff %}
     "ruff",
-{%- if enable_mypy %}
+{%- endif %}
+{%- if type_checker == "mypy" %}
     "mypy",
+{%- elif type_checker == "ty" %}
+    "ty",
 {%- endif %}
 ]
 {% endif -%}
@@ -79,7 +83,7 @@ automation = [
 {% endif -%}
 dev = [
     { include-group = "test" },
-{%- if enable_ruff %}
+{%- if enable_ruff or type_checker != "none" %}
     { include-group = "lint" },
 {%- endif %}
 {%- if enable_nox %}
@@ -140,7 +144,7 @@ split-on-trailing-comma = false
 "tests/**/*" = ["B011", "T201", "T203"]
 
 {% endif -%}
-{% if enable_mypy -%}
+{% if type_checker == "mypy" -%}
 [tool.mypy]
 python_version = "{{ python_min }}"
 ignore_missing_imports = true

@@ -19,7 +19,7 @@ repos:
       - id: uv-lock
         files: pyproject.toml
 
-{% if enable_mypy -%}
+{% if type_checker == "mypy" -%}
   - repo: local
     hooks:
       - id: mypy

@@ -9,6 +9,6 @@ python_min: "3.11"
 python_versions: "3.11,3.12"
 build_backend: hatchling
 enable_ruff: true
-enable_mypy: true
+type_checker: mypy
 enable_nox: true
 setup_dev_env: false
